@@ -6,7 +6,15 @@
 	<string>Our application needs access to your photo gallery for uploading an avatar.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Our application needs access to your camera for taking profile pictures.</string>
-
+	<key>CFBundleURLTypes</key>
+	<array>
+	<dict>
+		<key>CFBundleURLSchemes</key>
+		<array>
+		<string>app-1-1044896602037-ios-6ed2c32462053a998d2bfc</string>
+		</array>
+	</dict>
+	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

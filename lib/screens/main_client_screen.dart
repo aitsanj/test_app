@@ -78,13 +78,10 @@ class _MainScreenState extends State<MainScreen> {
                 )
               : null,
         ),
-        bottomNavigationBar: Container(
-          padding:
-              EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
-          decoration: BoxDecoration(
-              color: tabProvider.selectedTab == 0 ? background : borderGrey,
-              border:
-                  const Border(top: BorderSide(color: borderGrey, width: 1))),
+        bottomNavigationBar: DecoratedBox(
+          position: DecorationPosition.foreground,
+          decoration: const BoxDecoration(
+              border: Border(top: BorderSide(color: divider, width: 1))),
           child: BottomNavigationBar(
             backgroundColor:
                 tabProvider.selectedTab == 0 ? background : borderGrey,
@@ -104,7 +101,7 @@ class _MainScreenState extends State<MainScreen> {
             items: [
               BottomNavigationBarItem(
                 icon: Padding(
-                  padding: const EdgeInsets.only(bottom: 6.0),
+                  padding: const EdgeInsets.only(bottom: 6.0, top: 7),
                   child: Image.asset(
                     'lib/assets/navbar/main_unselected.png',
                   ),
@@ -119,7 +116,7 @@ class _MainScreenState extends State<MainScreen> {
               ),
               BottomNavigationBarItem(
                 icon: Padding(
-                  padding: const EdgeInsets.only(bottom: 6.0),
+                  padding: const EdgeInsets.only(bottom: 6.0, top: 7),
                   child: Image.asset(
                     'lib/assets/navbar/profile.png',
                     color: primaryGrey,

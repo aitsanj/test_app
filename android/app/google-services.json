@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1044896602037",
+    "project_id": "transfer-web-370010",
+    "storage_bucket": "transfer-web-370010.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1044896602037:android:bf1980f45e4b2f978d2bfc",
+        "android_client_info": {
+          "package_name": "com.example.ap_for_interview"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1044896602037-ujaha9r12gf5eedo7kmeoo4g4h2hdbn7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdz61hizHw1JVussQB3SsHUECc3Ptow2I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1044896602037-ujaha9r12gf5eedo7kmeoo4g4h2hdbn7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -4,6 +4,7 @@ import 'package:ap_for_interview/dictionary/colors.dart';
 import 'package:ap_for_interview/dictionary/validations.dart';
 import 'package:ap_for_interview/screens/main_client_screen.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
@@ -23,12 +24,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   List<int> completeSteps = [];
   List<int> steps = [1, 2, 3];
   final _phone = TextEditingController();
-  OtpFieldController _otp = OtpFieldController();
+  final OtpFieldController _otp = OtpFieldController();
   CarouselController buttonCarouselController = CarouselController();
   final _phoneFormKey = GlobalKey<FormState>();
   bool disabled = true;
   late Timer _timer;
   int _start = 60;
+  String _verificationId = '';
 
   void startTimer() {
     const oneSec = Duration(seconds: 1);
@@ -46,6 +48,72 @@ class _RegisterScreenState extends State<RegisterScreen> {
         }
       },
     );
+  }
+
+  String formatPhoneNumber(String rawPhoneNumber) {
+    String formatted = rawPhoneNumber.replaceAll(RegExp(r'\D'), '');
+    if (!formatted.startsWith('+')) {
+      formatted = '+$formatted';
+    }
+    return formatted;
+  }
+
+  Future<void> verifyPhoneNumber() async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    print(formatPhoneNumber(_phone.text));
+    await auth.verifyPhoneNumber(
+      phoneNumber: formatPhoneNumber(_phone.text),
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        await auth.signInWithCredential(credential);
+      },
+      verificationFailed: (FirebaseAuthException e) {
+        print('Ошибка верификации: ${e.message}');
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        print('codeSent $verificationId $resendToken');
+        if (currentPage == 0) {
+          buttonCarouselController.nextPage(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.linear);
+          startTimer();
+          setState(() {
+            currentStep = 2;
+          });
+        }
+        setState(() {
+          _verificationId = verificationId;
+        });
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {
+        setState(() {
+          _verificationId = verificationId;
+        });
+      },
+    );
+  }
+
+  Future<void> signInWithPhoneNumber(String smsCode) async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+
+    final AuthCredential credential = PhoneAuthProvider.credential(
+      verificationId: _verificationId,
+      smsCode: smsCode,
+    );
+
+    try {
+      final UserCredential userCredential =
+          await auth.signInWithCredential(credential);
+      if (userCredential.credential != null) {
+        if (context.mounted) {
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: ((context) {
+            return const MainScreen();
+          })));
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      print('Ошибка входа: ${e.message}');
+    }
   }
 
   var phoneMask = MaskTextInputFormatter(
@@ -141,7 +209,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               height: 24,
             ),
             SizedBox(
-              width: 199,
+              width: 300,
               child: Text(
                 currentStep > 1
                     ? 'Введите код, который мы отправили в SMS на ${_phone.text}'
@@ -173,7 +241,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 controller: _phone,
                                 keyboardType: TextInputType.number,
                                 validator: (value) {
-                                  print(value);
                                   if (value == null) {
                                     return 'Обязательное поле';
                                   } else if (!isValidPhoneNumber(value)) {
@@ -220,13 +287,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ElevatedButton(
                             onPressed: () {
                               if (_phoneFormKey.currentState!.validate()) {
-                                buttonCarouselController.nextPage(
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.linear);
-                                startTimer();
-                                setState(() {
-                                  currentStep = 2;
-                                });
+                                verifyPhoneNumber();
                               } else {
                                 return;
                               }
@@ -255,7 +316,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               text: TextSpan(children: [
                                 const TextSpan(
                                     text:
-                                        'Нажимая на данную кнопку, вы даете согласие на обработку',
+                                        'Нажимая на данную кнопку, вы даете согласие на обработку ',
                                     style: TextStyle(
                                         fontSize: 10, color: secondaryGrey)),
                                 TextSpan(
@@ -283,10 +344,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           style:
                               const TextStyle(fontSize: 28, color: primaryGrey),
                           onChanged: (pin) {
-                            print("Changed: " + pin);
+                            print("Changed: $pin");
                           },
                           onCompleted: (pin) {
-                            print("Completed: " + pin);
+                            print("Completed: $pin");
+                            signInWithPhoneNumber(pin);
                             Navigator.pushReplacement(context,
                                 MaterialPageRoute(builder: ((context) {
                               return const MainScreen();
@@ -308,7 +370,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               _start = 60;
                               _otp.clear();
                             });
-                            startTimer();
+                            verifyPhoneNumber();
                           },
                           child: const Text(
                             'Отправить код еще раз',
